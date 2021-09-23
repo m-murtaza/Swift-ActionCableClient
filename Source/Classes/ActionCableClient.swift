@@ -429,46 +429,50 @@ extension ActionCableClient {
                     DispatchQueue.main.async(execute: callback)
                 }
             case .message:
-                if let channel = channels[message.channelName!] {
-                    // Notify Channel
-                    channel.onMessage(message)
-                    
-                    if let callback = onChannelReceive {
-                        DispatchQueue.main.async(execute: { callback(channel, message.data, message.error) } )
-                    }
+                guard let channelName = message.channelName else { break }
+                guard let channel = channels[channelName] else { break }
+                
+                // Notify Channel
+                channel.onMessage(message)
+                
+                if let callback = onChannelReceive {
+                    DispatchQueue.main.async(execute: { callback(channel, message.data, message.error) } )
                 }
             case .confirmSubscription:
-                if let channel = unconfirmedChannels.removeValue(forKey: message.channelName!) {
-                    self.channels.updateValue(channel, forKey: channel.uid)
-                    
-                    // Notify Channel
-                    channel.onMessage(message)
-                    
-                    if let callback = onChannelSubscribed {
-                        DispatchQueue.main.async(execute: { callback(channel) })
-                    }
+                guard let channelName = message.channelName else { break }
+                guard let channel = unconfirmedChannels.removeValue(forKey: channelName) else { break }
+                
+                self.channels.updateValue(channel, forKey: channel.uid)
+                
+                // Notify Channel
+                channel.onMessage(message)
+                
+                if let callback = onChannelSubscribed {
+                    DispatchQueue.main.async(execute: { callback(channel) })
                 }
             case .rejectSubscription:
                 // Remove this channel from the list of unconfirmed subscriptions
-                if let channel = unconfirmedChannels.removeValue(forKey: message.channelName!) {
-                    
-                    // Notify Channel
-                    channel.onMessage(message)
-                    
-                    if let callback = onChannelRejected {
-                        DispatchQueue.main.async(execute: { callback(channel) })
-                    }
+                guard let channelName = message.channelName else { break }
+                guard let channel = unconfirmedChannels.removeValue(forKey: channelName) else { break }
+                // Notify Channel
+                channel.onMessage(message)
+                
+                if let callback = onChannelRejected {
+                    DispatchQueue.main.async(execute: { callback(channel) })
                 }
             case .hibernateSubscription:
-              if let channel = channels.removeValue(forKey: message.channelName!) {
-                // Add channel into unconfirmed channels
-                unconfirmedChannels[channel.uid] = channel
+                guard let channelName = message.channelName else { break }
                 
-                // We want to treat this like an unsubscribe.
-                fallthrough
-              }
+                if let channel = channels.removeValue(forKey: channelName) {
+                    // Add channel into unconfirmed channels
+                    unconfirmedChannels[channel.uid] = channel
+                    
+                    // We want to treat this like an unsubscribe.
+                    fallthrough
+                }
             case .cancelSubscription:
-                if let channel = channels.removeValue(forKey: message.channelName!) {
+                guard let channelName = message.channelName else { break }
+                if let channel = channels.removeValue(forKey: channelName) {
                     
                     // Notify Channel
                     channel.onMessage(message)
