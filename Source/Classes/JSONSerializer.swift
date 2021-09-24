@@ -22,14 +22,14 @@
 
 import Foundation
 
-//extension Dictionary {
-//    public func toJSON(options: JSONSerialization.WritingOptions = []) throws -> String {
-//        let data = try JSONSerialization.data(withJSONObject: self, options: options)
-//        guard let string = String(data: data, encoding: .utf8) else { fatalError("Can't convert data to string") }
-//
-//        return string
-//    }
-//}
+extension Dictionary {
+    public func toJSON(options: JSONSerialization.WritingOptions = []) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: self, options: options)
+        guard let string = String(data: data, encoding: .utf8) else { fatalError("Can't convert data to string") }
+
+        return string
+    }
+}
 
 internal class JSONSerializer {
 
@@ -38,7 +38,7 @@ internal class JSONSerializer {
     static func serialize(_ channel : Channel, command: Command, data: ActionPayload?) throws -> String {
         
          // Library Code
-        do {
+        /*do {
             var identifierDict : ChannelIdentifier
             if let identifier = channel.identifier {
                 identifierDict = identifier
@@ -73,7 +73,7 @@ internal class JSONSerializer {
         } catch {
             throw SerializationError.json
         }
-        /*
+        */
         do {
             var identifierDict : ChannelIdentifier
             if let identifier = channel.identifier {
@@ -82,11 +82,6 @@ internal class JSONSerializer {
                 identifierDict = Dictionary()
             }
             identifierDict["channel"] = "\(channel.name)"
-            
-            
-//            let JSONData = try JSONSerialization.data(withJSONObject: identifierDict, options: JSONSerialization.WritingOptions(rawValue: 0))
-//            guard let identifierString = NSString(data: JSONData, encoding: String.Encoding.utf8.rawValue)
-//                  else { throw SerializationError.json }
             
             var commandDict: [String : Any] = [:]
             if #available(iOS 11.0, *) {
@@ -109,16 +104,11 @@ internal class JSONSerializer {
                 commandDict["data"] = dataString
             }
             
-//            let CmdJSONData = try JSONSerialization.data(withJSONObject: commandDict, options: JSONSerialization.WritingOptions(rawValue: 0))
-//            guard let JSONString = NSString(data: CmdJSONData, encoding: String.Encoding.utf8.rawValue)
-//                  else { throw SerializationError.json }
-//
-//            return JSONString as String
             return try commandDict.toJSON()
         } catch {
             throw SerializationError.json
         }
-        */
+        
     }
     
     static func deserialize(_ string: String) throws -> Message {
